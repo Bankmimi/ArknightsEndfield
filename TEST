@@ -1,0 +1,2199 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>配裝器 v1</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 24px;
+    }
+    /* 新版三欄 UI */
+.app.layout-v2{
+  max-width: 1200px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 340px 360px 1fr; /* 紅｜綠+橘｜紫+藍 */
+  gap: 16px;
+  align-items: start;
+}
+
+.middle-col, .right-col{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.slot-grid-v2{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.panel-title{
+  font-size: 13px;
+  color: #9ca3af;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.selector-placeholder,
+.materials-placeholder{
+  color: #6b7280;
+  font-style: italic;
+  padding: 18px 8px;
+  text-align: center;
+}
+
+@media (max-width: 1100px){
+  .app.layout-v2{
+    grid-template-columns: 1fr;
+  }
+}
+    h1 {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+    .panel {
+      background: linear-gradient(135deg, #020617, #111827);
+      border: 1px solid #1f2937;
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+    }
+    .left-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .slot {
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      background: radial-gradient(circle at 0 0, rgba(148,163,184,0.15), transparent 55%);
+      padding: 8px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-height: 70px;
+      transition: border-color 0.15s, transform 0.1s, box-shadow 0.1s;
+    }
+    .slot:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56,189,248,0.5);
+      transform: translateY(-1px);
+    }
+    .slot-label {
+      font-size: 11px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .slot-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e5e7eb;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .slot-set {
+      font-size: 11px;
+      color: #a5b4fc;
+    }
+    .slot-empty {
+      font-size: 12px;
+      color: #6b7280;
+      font-style: italic;
+    }
+    .slot-mini-stats {
+      font-size: 11px;
+      color: #9ca3af;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .summary-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .summary-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap: 10px;
+    }
+    .summary-title {
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: #9ca3af;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .stat-list {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .stat-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 2px 0;
+    }
+    .stat-name {
+      color: #e5e7eb;
+    }
+    .stat-value {
+      color: #facc15;
+      flex-shrink: 0;
+    }
+
+    .set-effects-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .set-card {
+      border-radius: 10px;
+      border: 1px solid #1f2937;
+      background: radial-gradient(circle at 0 0, rgba(249,115,22,0.08), transparent 60%);
+      padding: 8px 10px;
+    }
+    .set-card-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    .set-card-name {
+      color: #fdba74;
+      font-weight: 600;
+    }
+    .set-card-count {
+      color: #9ca3af;
+      font-size: 11px;
+    }
+    .set-card-text {
+      font-size: 12px;
+      color: #e5e7eb;
+    }
+    .no-set {
+      font-size: 12px;
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.75);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
+    .modal {
+      width: min(560px, 100% - 32px);
+      max-height: 70vh;
+      background: #020617;
+      border-radius: 12px;
+      border: 1px solid #1f2937;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 10px 12px;
+      border-bottom: 1px solid #1f2937;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .modal-close {
+      border: none;
+      background: transparent;
+      color: #9ca3af;
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+    }
+    .modal-body {
+      padding: 8px 10px 10px;
+      overflow-y: auto;
+    }
+    /* 裝備清單可捲動 */
+    .equip-selector .item-list {
+      overflow-y: auto;
+      padding-right: 4px;     /* 避免捲軸壓到內容 */
+      flex: 1;                /* 撐滿剩餘高度 */
+    }
+    /* 捲軸美化（WebKit） */
+    .equip-selector .item-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .equip-selector .item-list::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+.equip-selector .item-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+    .item-row {
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      padding: 6px 8px;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: 1.6fr 1.2fr 1.8fr;
+      column-gap: 8px;
+      row-gap: 2px;
+      font-size: 12px;
+      background: #020617;
+    }
+    .item-row:hover {
+      border-color: #38bdf8;
+      background: radial-gradient(circle at 0 0, rgba(56,189,248,0.15), #020617 60%);
+    }
+    .item-row-name {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+    .item-row-set {
+      color: #a5b4fc;
+    }
+    .item-row-part {
+      color: #9ca3af;
+      font-size: 11px;
+    }
+    .item-row-stats {
+      color: #9ca3af;
+      grid-column: 1 / -1;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 6px;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      font-size: 11px;
+      color: #9ca3af;
+      gap: 4px;
+    }
+    .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+    @media (max-width: 900px) {
+      body { padding: 12px; }
+      .app {
+        grid-template-columns: 1fr;
+      }
+    }
+    /* 紅色裝備選擇區：固定高度 */
+    .equip-selector {
+      height: 520px;          /* 你可以之後自己微調 */
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+</head>
+<body>
+  <div class="app layout-v2">
+  <!-- 左：紅色區域（裝備清單/選擇區） -->
+  <div class="panel equip-selector" id="equip-selector">
+    <div class="selector-placeholder">請選擇裝備</div>
+  </div>
+
+  <!-- 中：綠色（裝備槽）＋橘色（材料預留區） -->
+  <div class="middle-col">
+    <div class="panel equip-slots">
+      <div class="slot-grid-v2">
+        <div class="slot" data-slot-id="armor" data-part="護甲">
+          <div class="slot-label">護甲</div>
+          <div class="slot-name slot-empty">尚未裝備</div>
+          <div class="slot-mini-stats"></div>
+        </div>
+
+        <div class="slot" data-slot-id="acc1" data-part="配件">
+          <div class="slot-label">配件 1</div>
+          <div class="slot-name slot-empty">尚未裝備</div>
+          <div class="slot-mini-stats"></div>
+        </div>
+
+        <div class="slot" data-slot-id="gloves" data-part="護手">
+          <div class="slot-label">護手</div>
+          <div class="slot-name slot-empty">尚未裝備</div>
+          <div class="slot-mini-stats"></div>
+        </div>
+
+        <div class="slot" data-slot-id="acc2" data-part="配件">
+          <div class="slot-label">配件 2</div>
+          <div class="slot-name slot-empty">尚未裝備</div>
+          <div class="slot-mini-stats"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel craft-materials" id="craft-materials">
+      <div class="panel-title">製作材料</div>
+      <div class="materials-placeholder">（預留）選好裝備後，這裡顯示需要的素材</div>
+    </div>
+  </div>
+
+  <!-- 右：紫色（統計）＋藍色（套裝效果） -->
+  <div class="right-col">
+    <div class="panel stat-summary">
+      <div class="panel-title">屬性統計</div>
+
+      <div class="summary-row">
+        <div>
+          <div class="summary-title">主要屬性</div>
+          <div class="stat-list" id="stats-main"></div>
+        </div>
+        <div>
+          <div class="summary-title">傷害 / 輸出</div>
+          <div class="stat-list" id="stats-damage"></div>
+        </div>
+      </div>
+
+      <div class="summary-row">
+        <div>
+          <div class="summary-title">防禦 / 生存</div>
+          <div class="stat-list" id="stats-defense"></div>
+        </div>
+        <div>
+          <div class="summary-title">特殊 / 其他</div>
+          <div class="stat-list" id="stats-special"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel set-effects">
+      <div class="panel-title">套裝效果</div>
+      <div class="set-effects-container" id="set-effects"></div>
+    </div>
+  </div>
+</div>
+
+
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title">選擇裝備</div>
+        <button class="modal-close" id="modalCloseBtn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="item-list" id="itemList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+      // === 裝備資料 ===
+    const items = [
+      // ===== 長息 =====
+
+// 配件
+{ id: "長息_配件1", name: "長息 配件 1", set: "長息", part: "配件", level: 70,
+  stats: { "意志": 32, "智識": 21, "終結蓄能": 24.6 } },
+
+{ id: "長息_配件2", name: "長息 配件 2", set: "長息", part: "配件", level: 70,
+  stats: { "智識": 32, "意志": 21, "治療效果": 20.7 } },
+
+{ id: "長息_配件3", name: "長息 配件 3", set: "長息", part: "配件", level: 70,
+  stats: { "智識": 32, "力量": 21, "終結蓄能": 24.6 } },
+
+// 護手
+{ id: "長息_護手1", name: "長息 護手 1", set: "長息", part: "護手", level: 70,
+  stats: { "智識": 65, "意志": 43, "終結蓄能": 20.5 } },
+
+{ id: "長息_護手2", name: "長息 護手 2", set: "長息", part: "護手", level: 70,
+  stats: { "智識": 65, "力量": 43, "終結蓄能": 20.5 } },
+
+// 護甲
+{ id: "長息_護甲1", name: "長息 護甲 1", set: "長息", part: "護甲", level: 70,
+  stats: { "意志": 87, "智識": 58, "源石技藝": 20 } },
+
+ // ===== 潮湧 =====
+
+// 配件
+{ id: "潮湧_配件1", name: "潮湧 配件 1", set: "潮湧", part: "配件", level: 70,
+  stats: { "智識": 32, "力量": 21, "普攻傷害": 27.6 } },
+
+{ id: "潮湧_配件2", name: "潮湧 配件 2", set: "潮湧", part: "配件", level: 70,
+  stats: { "力量": 32, "意志": 21, "寒冷/電磁傷害": 23 } },
+
+// 護手
+{ id: "潮湧_護手1", name: "潮湧 護手 1", set: "潮湧", part: "護手", level: 70,
+  stats: { "力量": 65, "意志": 43, "寒冷/電磁傷害": 19.2 } },
+
+// 護甲
+{ id: "潮湧_護甲1", name: "潮湧 護甲 1", set: "潮湧", part: "護甲", level: 70,
+  stats: { "智識": 87, "力量": 58, "終結蓄能": 12.3 } },
+
+// ===== 50應龍 =====
+
+// 配件
+{ id: "50應龍_配件1", name: "50應龍 配件 1", set: "50應龍", part: "配件", level: 70,
+  stats: { "力量": 32, "意志": 21, "物理傷害": 23 } },
+
+{ id: "50應龍_配件2", name: "50應龍 配件 2", set: "50應龍", part: "配件", level: 70,
+  stats: { "智識": 32, "力量": 21, "技能傷害": 27.6 } },
+
+{ id: "50應龍_配件3", name: "50應龍 配件 3", set: "50應龍", part: "配件", level: 70,
+  stats: { "意志": 32, "敏捷": 21, "連攜傷害": 41.4 } },
+
+// 護手
+{ id: "50應龍_護手1", name: "50應龍 護手 1", set: "50應龍", part: "護手", level: 70,
+  stats: { "意志": 65, "敏捷": 43, "連攜傷害": 34.5 } },
+
+{ id: "50應龍_護手2", name: "50應龍 護手 2", set: "50應龍", part: "護手", level: 70,
+  stats: { "敏捷": 65, "智識": 43, "連攜傷害": 34.5 } },
+
+// 護甲
+{ id: "50應龍_護甲1", name: "50應龍 護甲 1", set: "50應龍", part: "護甲", level: 70,
+  stats: { "意志": 87, "力量": 58, "技能傷害": 13.8 } },
+
+{ id: "50應龍_護甲2", name: "50應龍 護甲 2", set: "50應龍", part: "護甲", level: 70,
+  stats: { "力量": 87, "意志": 58, "物理傷害": 11.5 } },
+
+// ===== MI警用 =====
+
+// 配件
+{ id: "MI警用_配件1", name: "MI警用 配件 1", set: "MI警用", part: "配件", level: 70,
+  stats: { "意志": 32, "敏捷": 21, "戰技傷害": 41.4 } },
+
+{ id: "MI警用_配件2", name: "MI警用 配件 2", set: "MI警用", part: "配件", level: 70,
+  stats: { "意志": 32, "智識": 21, "灼燒/自然傷害": 23 } },
+
+{ id: "MI警用_配件3", name: "MI警用 配件 3", set: "MI警用", part: "配件", level: 70,
+  stats: { "智識": 32, "敏捷": 21, "暴擊率": 10.4 } },
+
+{ id: "MI警用_配件4", name: "MI警用 配件 4", set: "MI警用", part: "配件", level: 70,
+  stats: { "敏捷": 32, "力量": 21, "戰技傷害": 41.4 } },
+
+{ id: "MI警用_配件5", name: "MI警用 配件 5", set: "MI警用", part: "配件", level: 70,
+  stats: { "力量": 32, "意志": 21, "寒冷/電磁傷害": 23 } },
+
+// 護手
+{ id: "MI警用_護手1", name: "MI警用 護手 1", set: "MI警用", part: "護手", level: 70,
+  stats: { "智識": 65, "意志": 43, "暴擊率": 8.6 } },
+
+{ id: "MI警用_護手2", name: "MI警用 護手 2", set: "MI警用", part: "護手", level: 70,
+  stats: { "智識": 65, "敏捷": 43, "普攻傷害": 23 } },
+
+{ id: "MI警用_護手3", name: "MI警用 護手 3", set: "MI警用", part: "護手", level: 70,
+  stats: { "敏捷": 65, "力量": 43, "戰技傷害": 34.5 } },
+
+// 護甲
+{ id: "MI警用_護甲1", name: "MI警用 護甲 1", set: "MI警用", part: "護甲", level: 70,
+  stats: { "意志": 87, "敏捷": 58, "戰技傷害": 20.7 } },
+
+{ id: "MI警用_護甲2", name: "MI警用 護甲 2", set: "MI警用", part: "護甲", level: 70,
+  stats: { "智識": 87, "意志": 58, "暴擊率": 5.2 } },
+
+{ id: "MI警用_護甲3", name: "MI警用 護甲 3", set: "MI警用", part: "護甲", level: 70,
+  stats: { "智識": 87, "敏捷": 58, "普攻傷害": 13.8 } },
+
+{ id: "MI警用_護甲4", name: "MI警用 護甲 4", set: "MI警用", part: "護甲", level: 70,
+  stats: { "敏捷": 87, "力量": 58, "源石技藝": 20 } },
+
+// ===== 動火用（修正版）=====
+
+// 配件
+{ id: "動火用_配件1", name: "動火用 配件 1", set: "動火用", part: "配件", level: 70,
+  stats: { "意志": 32, "智識": 21, "源石技藝": 41 } },
+
+{ id: "動火用_配件2", name: "動火用 配件 2", set: "動火用", part: "配件", level: 70,
+  stats: { "力量": 32, "敏捷": 21, "源石技藝": 41 } },
+
+{ id: "動火用_配件3", name: "動火用 配件 3", set: "動火用", part: "配件", level: 70,
+  stats: { "智識": 41, "戰技傷害": 41.4 } },  // ← 已修正
+
+// 護手
+{ id: "動火用_護手1", name: "動火用 護手 1", set: "動火用", part: "護手", level: 70,
+  stats: { "意志": 65, "智識": 43, "灼熱/自然傷害": 19.2 } },
+
+{ id: "動火用_護手2", name: "動火用 護手 2", set: "動火用", part: "護手", level: 70,
+  stats: { "智識": 65, "力量": 43, "灼熱/自然傷害": 19.2 } },
+
+// 護甲
+{ id: "動火用_護甲1", name: "動火用 護甲 1", set: "動火用", part: "護甲", level: 70,
+  stats: { "力量": 87, "敏捷": 58, "灼熱/自然傷害": 11.5 } },
+
+// ===== 拓荒 =====
+
+// 配件
+{ id: "拓荒_配件1", name: "拓荒 配件 1", set: "拓荒", part: "配件", level: 70,
+  stats: { "敏捷": 32, "智識": 21, "副能力": 20.7 } },
+
+{ id: "拓荒_配件2", name: "拓荒 配件 2", set: "拓荒", part: "配件", level: 70,
+  stats: { "力量": 32, "智識": 21, "寒冷電磁傷害": 23 } },
+
+{ id: "拓荒_配件3", name: "拓荒 配件 3", set: "拓荒", part: "配件", level: 70,
+  stats: { "力量": 32, "敏捷": 21, "連攜技能": 41.4 } },
+
+// 護手
+{ id: "拓荒_護手1", name: "拓荒 護手 1", set: "拓荒", part: "護手", level: 70,
+  stats: { "敏捷": 65, "智識": 43, "戰技傷害": 34.5 } },
+
+// 護甲
+{ id: "拓荒_護甲1", name: "拓荒 護甲 1", set: "拓荒", part: "護甲", level: 70,
+  stats: { "敏捷": 87, "智識": 58, "副能力": 10.4 } },
+
+{ id: "拓荒_護甲2", name: "拓荒 護甲 2", set: "拓荒", part: "護甲", level: 70,
+  stats: { "敏捷": 87, "智識": 58, "戰技傷害": 20.7 } },
+
+{ id: "拓荒_護甲3", name: "拓荒 護甲 3", set: "拓荒", part: "護甲", level: 70,
+  stats: { "力量": 87, "敏捷": 58, "戰技傷害": 20.7 } },
+
+{ id: "拓荒_護甲4", name: "拓荒 護甲 4", set: "拓荒", part: "護甲", level: 70,
+  stats: { "力量": 87, "智識": 58, "終結傷害": 25.9 } },
+
+// ===== 脈衝式 =====
+
+// 配件
+{ id: "脈衝式_配件1", name: "脈衝式 配件 1", set: "脈衝式", part: "配件", level: 70,
+  stats: { "智識": 41, "源石技藝": 41 } }, 
+// （此件屬性二為 "-"，但額外屬性是「源石技藝+41%」→ 已正確解析）
+
+// 護手
+{ id: "脈衝式_護手1", name: "脈衝式 護手 1", set: "脈衝式", part: "護手", level: 70,
+  stats: { "意志": 65, "智識": 43, "寒冷/電磁傷害": 19.2 } },
+
+// 護甲
+{ id: "脈衝式_護甲1", name: "脈衝式 護甲 1", set: "脈衝式", part: "護甲", level: 70,
+  stats: { "智識": 87, "意志": 58, "源石技藝": 20 } },
+
+// ===== 碾骨 =====
+
+// 配件
+{ id: "碾骨_配件1", name: "碾骨 配件 1", set: "碾骨", part: "配件", level: 70,
+  stats: { "意志": 32, "智識": 21, "連攜傷害": 41.4 } },
+
+{ id: "碾骨_配件2", name: "碾骨 配件 2", set: "碾骨", part: "配件", level: 70,
+  stats: { "意志": 32, "敏捷": 21, "戰技傷害": 41.4 } },
+
+{ id: "碾骨_配件3", name: "碾骨 配件 3", set: "碾骨", part: "配件", level: 70,
+  stats: { "敏捷": 32, "力量": 21, "暴擊率": 10.4 } },
+
+{ id: "碾骨_配件4", name: "碾骨 配件 4", set: "碾骨", part: "配件", level: 70,
+  stats: { "敏捷": 32, "力量": 21, "失衡目標傷害": 59.1 } },
+
+// 護甲
+{ id: "碾骨_護甲1", name: "碾骨 護甲 1", set: "碾骨", part: "護甲", level: 70,
+  stats: { "意志": 87, "敏捷": 58, "終結蓄能": 12.3 } },
+
+{ id: "碾骨_護甲2", name: "碾骨 護甲 2", set: "碾骨", part: "護甲", level: 70,
+  stats: { "意志": 87, "力量": 58, "連攜傷害": 20.7 } },
+
+{ id: "碾骨_護甲3", name: "碾骨 護甲 3", set: "碾骨", part: "護甲", level: 70,
+  stats: { "敏捷": 87, "力量": 58, "連攜傷害": 20.7 } },
+
+{ id: "碾骨_護甲4", name: "碾骨 護甲 4", set: "碾骨", part: "護甲", level: 70,
+  stats: { "敏捷": 87, "智識": 58, "終結蓄能": 12.3 } },
+
+
+// ===== 輕超域 =====
+
+// 配件
+{ id: "輕超域_配件1", name: "輕超域 配件 1", set: "輕超域", part: "配件", level: 70,
+  stats: { "敏捷": 32, "力量": 21, "源石技藝": 41 } },
+
+{ id: "輕超域_配件2", name: "輕超域 配件 2", set: "輕超域", part: "配件", level: 70,
+  stats: { "力量": 32, "意志": 21, "物理傷害": 23 } },
+
+// 護手
+{ id: "輕超域_護手1", name: "輕超域 護手 1", set: "輕超域", part: "護手", level: 70,
+  stats: { "敏捷": 65, "力量": 43, "源石技藝": 34 } },
+
+// 護甲
+{ id: "輕超域_護甲1", name: "輕超域 護甲 1", set: "輕超域", part: "護甲", level: 70,
+  stats: { "力量": 87, "意志": 58, "失衡目標傷害": 29.6 } },
+
+// ===== 生物輔助 =====
+
+// 配件
+{ id: "生物輔助_配件1", name: "生物輔助 配件 1", set: "生物輔助", part: "配件", level: 70,
+  stats: { "意志": 41, "治療效率": 20.7 } },
+
+{ id: "生物輔助_配件2", name: "生物輔助 配件 2", set: "生物輔助", part: "配件", level: 70,
+  stats: { "意志": 32, "智識": 21, "主能力": 20.7 } },
+
+{ id: "生物輔助_配件3", name: "生物輔助 配件 3", set: "生物輔助", part: "配件", level: 70,
+  stats: { "力量": 32, "意志": 21, "生命": 41.4 } },
+
+{ id: "生物輔助_配件4", name: "生物輔助 配件 4", set: "生物輔助", part: "配件", level: 70,
+  stats: { "力量": 32, "意志": 21, "總傷害減免": 17.2 } },
+
+// 護手
+{ id: "生物輔助_護手1", name: "生物輔助 護手 1", set: "生物輔助", part: "護手", level: 70,
+  stats: { "意志": 65, "力量": 43, "治療效率": 17.3 } },
+
+{ id: "生物輔助_護手2", name: "生物輔助 護手 2", set: "生物輔助", part: "護手", level: 70,
+  stats: { "力量": 65, "意志": 43, "終結蓄能": 20.5 } },
+
+// 護甲
+{ id: "生物輔助_護甲1", name: "生物輔助 護甲 1", set: "生物輔助", part: "護甲", level: 70,
+  stats: { "意志": 87, "智識": 58, "治療效率": 10.4 } },
+
+{ id: "生物輔助_護甲2", name: "生物輔助 護甲 2", set: "生物輔助", part: "護甲", level: 70,
+  stats: { "力量": 87, "意志": 58, "治療效率": 10.4 } },
+
+
+// ===== 點劍 =====
+
+// 配件
+{ 
+  id: "點劍_配件1", 
+  name: "點劍 配件 1", 
+  set: "點劍", 
+  part: "配件", 
+  level: 70,
+  stats: { "敏捷": 32, "力量": 21, "物理傷害": 23 } },
+
+// 護手
+{ 
+  id: "點劍_護手1", 
+  name: "點劍 護手 1", 
+  set: "點劍", 
+  part: "護手", 
+  level: 70,
+  stats: { "敏捷": 65, "力量": 43, "終結傷害": 43.1 } },
+
+{ 
+  id: "點劍_護手2", 
+  name: "點劍 護手 2", 
+  set: "點劍", 
+  part: "護手", 
+  level: 70,
+  stats: { "力量": 65, "意志": 43, "物理傷害": 19.2 } },
+
+// 護甲
+{ 
+  id: "點劍_護甲1", 
+  name: "點劍 護甲 1", 
+  set: "點劍", 
+  part: "護甲", 
+  level: 70,
+  stats: { "敏捷": 87, "力量": 58, "源石技藝": 20 } },
+
+// ===== 天災防護 =====
+
+// 配件
+{
+  id: "天災防護_配件1",
+  name: "天災防護 配件 1",
+  set: "天災防護",
+  part: "配件",
+  level: 50,
+  stats: { "力量": 23, "意志": 15, "副能力": 14.7 }
+},
+
+{
+  id: "天災防護_配件2",
+  name: "天災防護 配件 2",
+  set: "天災防護",
+  part: "配件",
+  level: 50,
+  stats: { "力量": 23, "智識": 15, "終結傷害": 36.8 }
+},
+
+{
+  id: "天災防護_配件3",
+  name: "天災防護 配件 3",
+  set: "天災防護",
+  part: "配件",
+  level: 50,
+  stats: { "意志": 23, "智識": 15, "源石技藝": 29 }
+},
+
+// 護手
+{
+  id: "天災防護_護手1",
+  name: "天災防護 護手 1",
+  set: "天災防護",
+  part: "護手",
+  level: 50,
+  stats: { "意志": 46, "智識": 30, "源石技藝": 24 }
+},
+
+// 護甲
+{
+  id: "天災防護_護甲1",
+  name: "天災防護 護甲 1",
+  set: "天災防護",
+  part: "護甲",
+  level: 50,
+  stats: { "力量": 61, "意志": 41, "終結蓄能": 8.8 }
+},
+
+{
+  id: "天災防護_護甲2",
+  name: "天災防護 護甲 2",
+  set: "天災防護",
+  part: "護甲",
+  level: 50,
+  stats: { "力量": 61, "智識": 41, "終結傷害": 18.4 }
+},
+
+// ===== 阿伯莉・遺聲 =====
+
+// 配件
+{
+  id: "阿伯莉遺聲_配件1",
+  name: "阿伯莉・遺聲 配件 1",
+  set: "阿伯莉遺聲",
+  part: "配件",
+  level: 50,
+  stats: { "意志": 23, "智識": 15, "戰技傷害": 29.4 }
+},
+
+{
+  id: "阿伯莉遺聲_配件2",
+  name: "阿伯莉・遺聲 配件 2",
+  set: "阿伯莉遺聲",
+  part: "配件",
+  level: 50,
+  stats: { "意志": 23, "敏捷": 15, "戰技傷害": 29.4 }
+},
+
+{
+  id: "阿伯莉遺聲_配件3",
+  name: "阿伯莉・遺聲 配件 3",
+  set: "阿伯莉遺聲",
+  part: "配件",
+  level: 50,
+  stats: { "敏捷": 23, "力量": 15, "連攜傷害": 29.4 }
+},
+
+{
+  id: "阿伯莉遺聲_配件4",
+  name: "阿伯莉・遺聲 配件 4",
+  set: "阿伯莉遺聲",
+  part: "配件",
+  level: 50,
+  stats: { "力量": 23, "意志": 15, "失衡目標傷害": 42 }
+},
+
+{
+  id: "阿伯莉遺聲_配件5",
+  name: "阿伯莉・遺聲 配件 5",
+  set: "阿伯莉遺聲",
+  part: "配件",
+  level: 50,
+  stats: { "智識": 23, "力量": 15, "終結蓄能": 17.5 }
+},
+
+{
+  id: "阿伯莉遺聲_配件6",
+  name: "阿伯莉・遺聲 配件 6",
+  set: "阿伯莉遺聲",
+  part: "配件",
+  level: 50,
+  stats: { "力量": 23, "敏捷": 15, "技能傷害": 19.6 }
+},
+
+// 護手
+{
+  id: "阿伯莉遺聲_護手1",
+  name: "阿伯莉・遺聲 護手 1",
+  set: "阿伯莉遺聲",
+  part: "護手",
+  level: 50,
+  stats: { "力量": 46, "意志": 30, "失衡目標傷害": 35 }
+},
+
+// 護甲
+{
+  id: "阿伯莉遺聲_護甲1",
+  name: "阿伯莉・遺聲 護甲 1",
+  set: "阿伯莉遺聲",
+  part: "護甲",
+  level: 50,
+  stats: { "意志": 61, "敏捷": 41, "戰技傷害": 14.7 }
+},
+
+{
+  id: "阿伯莉遺聲_護甲2",
+  name: "阿伯莉・遺聲 護甲 2",
+  set: "阿伯莉遺聲",
+  part: "護甲",
+  level: 50,
+  stats: { "智識": 61, "力量": 41, "終結蓄能": 8.8 }
+},
+
+{
+  id: "阿伯莉遺聲_護甲3",
+  name: "阿伯莉・遺聲 護甲 3",
+  set: "阿伯莉遺聲",
+  part: "護甲",
+  level: 50,
+  stats: { "敏捷": 61, "力量": 41, "連攜傷害": 14.7 }
+},
+
+{
+  id: "阿伯莉遺聲_護甲4",
+  name: "阿伯莉・遺聲 護甲 4",
+  set: "阿伯莉遺聲",
+  part: "護甲",
+  level: 50,
+  stats: { "力量": 61, "敏捷": 41, "技能傷害": 9.8 }
+},
+
+// ===== 蝕電防護（50） =====
+
+// 配件
+{
+  id: "蝕電防護50_配件1",
+  name: "蝕電防護 配件 1",
+  set: "蝕電防護",
+  part: "配件",
+  level: 50,
+  stats: { "意志": 23, "敏捷": 15, "治療效率": 14.7 }
+},
+
+{
+  id: "蝕電防護50_配件2",
+  name: "蝕電防護 配件 2",
+  set: "蝕電防護",
+  part: "配件",
+  level: 50,
+  stats: { "意志": 23, "智識": 15, "攻擊力": 14.7 }
+},
+
+// 護手
+{
+  id: "蝕電防護50_護手1",
+  name: "蝕電防護 護手 1",
+  set: "蝕電防護",
+  part: "護手",
+  level: 50,
+  stats: { "意志": 46, "敏捷": 30, "攻擊力": 12.3 }
+},
+
+// 護甲
+{
+  id: "蝕電防護50_護甲1",
+  name: "蝕電防護 護甲 1",
+  set: "蝕電防護",
+  part: "護甲",
+  level: 50,
+  stats: { "意志": 61, "智識": 41, "生命": 14.7 }
+},
+
+// ===== 蝕電防護（36） =====
+
+// 配件
+{
+  id: "蝕電防護36_配件1",
+  name: "蝕電防護 配件 1",
+  set: "蝕電防護",
+  part: "配件",
+  level: 36,
+  stats: { "意志": 21, "治療效率": 10.5 }
+},
+
+{
+  id: "蝕電防護36_配件2",
+  name: "蝕電防護 配件 2",
+  set: "蝕電防護",
+  part: "配件",
+  level: 36,
+  stats: { "意志": 21, "攻擊力": 10.5 }
+},
+
+// 護手
+{
+  id: "蝕電防護36_護手1",
+  name: "蝕電防護 護手 1",
+  set: "蝕電防護",
+  part: "護手",
+  level: 36,
+  stats: { "意志": 33, "智識": 22, "治療效率": 8.8 }
+},
+
+// 護甲
+{
+  id: "蝕電防護36_護甲1",
+  name: "蝕電防護 護甲 1",
+  set: "蝕電防護",
+  part: "護甲",
+  level: 36,
+  stats: { "意志": 44, "敏捷": 29, "生命": 10.5 }
+},
+
+// ===== 蝕電絕緣（50） =====
+
+// 配件
+{
+  id: "蝕電絕緣50_配件1",
+  name: "蝕電絕緣 配件 1",
+  set: "蝕電絕緣",
+  part: "配件",
+  level: 50,
+  stats: { "智識": 29, "終結蓄能": 17.5 }
+},
+
+{
+  id: "蝕電絕緣50_配件2",
+  name: "蝕電絕緣 配件 2",
+  set: "蝕電絕緣",
+  part: "配件",
+  level: 50,
+  stats: { "智識": 23, "敏捷": 15, "攻擊力": 14.7 }
+},
+
+// 護手
+{
+  id: "蝕電絕緣50_護手1",
+  name: "蝕電絕緣 護手 1",
+  set: "蝕電絕緣",
+  part: "護手",
+  level: 50,
+  stats: { "智識": 46, "力量": 30, "攻擊力": 12.3 }
+},
+
+// 護甲
+{
+  id: "蝕電絕緣50_護甲1",
+  name: "蝕電絕緣 護甲 1",
+  set: "蝕電絕緣",
+  part: "護甲",
+  level: 50,
+  stats: { "智識": 61, "意志": 41, "生命": 14.7 }
+},
+
+{
+  id: "蝕電絕緣50_護甲2",
+  name: "蝕電絕緣 護甲 2",
+  set: "蝕電絕緣",
+  part: "護甲",
+  level: 50,
+  stats: { "智識": 61, "敏捷": 41, "普攻傷害": 9.8 }
+},
+
+// ===== 蝕電絕緣（36） =====
+
+// 配件
+{
+  id: "蝕電絕緣36_配件1",
+  name: "蝕電絕緣 配件 1",
+  set: "蝕電絕緣",
+  part: "配件",
+  level: 36,
+  stats: { "智識": 21, "暴擊率": 5.3 }
+},
+
+{
+  id: "蝕電絕緣36_配件2",
+  name: "蝕電絕緣 配件 2",
+  set: "蝕電絕緣",
+  part: "配件",
+  level: 36,
+  stats: { "智識": 21, "寒冷/電磁傷害": 11.7 }
+},
+
+{
+  id: "蝕電絕緣36_配件3",
+  name: "蝕電絕緣 配件 3",
+  set: "蝕電絕緣",
+  part: "配件",
+  level: 36,
+  stats: { "智識": 21, "攻擊力": 10.5 }
+},
+
+// 護手
+{
+  id: "蝕電絕緣36_護手1",
+  name: "蝕電絕緣 護手 1",
+  set: "蝕電絕緣",
+  part: "護手",
+  level: 36,
+  stats: { "智識": 33, "意志": 22, "法術傷害": 9.2 }
+},
+
+// 護甲
+{
+  id: "蝕電絕緣36_護甲1",
+  name: "蝕電絕緣 護甲 1",
+  set: "蝕電絕緣",
+  part: "護甲",
+  level: 36,
+  stats: { "智識": 44, "力量": 29, "攻擊": 16 }
+},
+
+// ===== 巡航信使（50） =====
+
+// 配件
+{
+  id: "巡航信使50_配件1",
+  name: "巡航信使 配件 1",
+  set: "巡航信使",
+  part: "配件",
+  level: 50,
+  stats: { "敏捷": 23, "智識": 15, "攻擊力": 14.7 }
+},
+
+{
+  id: "巡航信使50_配件2",
+  name: "巡航信使 配件 2",
+  set: "巡航信使",
+  part: "配件",
+  level: 50,
+  stats: { "敏捷": 23, "力量": 15, "終結傷害": 36.8 }
+},
+
+{
+  id: "巡航信使50_配件3",
+  name: "巡航信使 配件 3",
+  set: "巡航信使",
+  part: "配件",
+  level: 50,
+  stats: { "敏捷": 23, "力量": 15, "連攜傷害": 29.4 }
+},
+
+// 護手
+{
+  id: "巡航信使50_護手1",
+  name: "巡航信使 護手 1",
+  set: "巡航信使",
+  part: "護手",
+  level: 50,
+  stats: { "敏捷": 46, "力量": 30, "攻擊力": 12.3 }
+},
+
+// 護甲
+{
+  id: "巡航信使50_護甲1",
+  name: "巡航信使 護甲 1",
+  set: "巡航信使",
+  part: "護甲",
+  level: 50,
+  stats: { "敏捷": 61, "智識": 41, "生命": 14.7 }
+},
+
+// ===== 巡航信使（36） =====
+
+// 配件
+{
+  id: "巡航信使36_配件1",
+  name: "巡航信使 配件 1",
+  set: "巡航信使",
+  part: "配件",
+  level: 36,
+  stats: { "敏捷": 21, "攻擊力": 10.5 }
+},
+
+{
+  id: "巡航信使36_配件2",
+  name: "巡航信使 配件 2",
+  set: "巡航信使",
+  part: "配件",
+  level: 36,
+  stats: { "敏捷": 21, "連攜傷害": 21 }
+},
+
+// 護手
+{
+  id: "巡航信使36_護手1",
+  name: "巡航信使 護手 1",
+  set: "巡航信使",
+  part: "護手",
+  level: 36,
+  stats: { "敏捷": 33, "力量": 22, "物理傷害": 9.7 }
+},
+
+// 護甲
+{
+  id: "巡航信使36_護甲1",
+  name: "巡航信使 護甲 1",
+  set: "巡航信使",
+  part: "護甲",
+  level: 36,
+  stats: { "敏捷": 44, "智識": 29, "攻擊": 16 }
+},
+
+// ===== 重裝信使（50） =====
+
+// 配件
+{
+  id: "重裝信使50_配件1",
+  name: "重裝信使 配件 1",
+  set: "重裝信使",
+  part: "配件",
+  level: 50,
+  stats: { "力量": 23, "意志": 15, "攻擊力": 14.7 }
+},
+
+{
+  id: "重裝信使50_配件2",
+  name: "重裝信使 配件 2",
+  set: "重裝信使",
+  part: "配件",
+  level: 50,
+  stats: { "力量": 23, "敏捷": 15, "暴擊率": 7.4 }
+},
+
+// 護手
+{
+  id: "重裝信使50_護手1",
+  name: "重裝信使 護手 1",
+  set: "重裝信使",
+  part: "護手",
+  level: 50,
+  stats: { "力量": 46, "敏捷": 30, "連攜傷害": 24.5 }
+},
+
+{
+  id: "重裝信使50_護手2",
+  name: "重裝信使 護手 2",
+  set: "重裝信使",
+  part: "護手",
+  level: 50,
+  stats: { "力量": 46, "敏捷": 30, "攻擊力": 12.3 }
+},
+
+// 護甲
+{
+  id: "重裝信使50_護甲1",
+  name: "重裝信使 護甲 1",
+  set: "重裝信使",
+  part: "護甲",
+  level: 50,
+  stats: { "力量": 61, "意志": 41, "生命": 14.7 }
+},
+
+// ===== 重裝信使（36） =====
+
+// 配件
+{
+  id: "重裝信使36_配件1",
+  name: "重裝信使 配件 1",
+  set: "重裝信使",
+  part: "配件",
+  level: 36,
+  stats: { "力量": 21, "攻擊力": 10.5 }
+},
+
+{
+  id: "重裝信使36_配件2",
+  name: "重裝信使 配件 2",
+  set: "重裝信使",
+  part: "配件",
+  level: 36,
+  stats: { "力量": 21, "生命": 21 }
+},
+
+// 護手
+{
+  id: "重裝信使36_護手1",
+  name: "重裝信使 護手 1",
+  set: "重裝信使",
+  part: "護手",
+  level: 36,
+  stats: { "力量": 33, "意志": 22, "總傷害減免": 8 }
+},
+
+// 護甲
+{
+  id: "重裝信使36_護甲1",
+  name: "重裝信使 護甲 1",
+  set: "重裝信使",
+  part: "護甲",
+  level: 36,
+  stats: { "力量": 44, "敏捷": 29, "生命": 10.5 }
+},
+
+// ===== 整合輕型（28） =====
+
+// 配件
+{
+  id: "整合輕型28_配件1",
+  name: "整合輕型 配件 1",
+  set: "整合輕型",
+  part: "配件",
+  level: 28,
+  stats: { "意志": 16, "戰技傷害": 16.2 }
+},
+
+{
+  id: "整合輕型28_配件2",
+  name: "整合輕型 配件 2",
+  set: "整合輕型",
+  part: "配件",
+  level: 28,
+  stats: { "智識": 16, "連攜傷害": 16.2 }
+},
+
+// 護手
+{
+  id: "整合輕型28_護手1",
+  name: "整合輕型 護手 1",
+  set: "整合輕型",
+  part: "護手",
+  level: 28,
+  stats: { "智識": 23, "敏捷": 23, "連攜傷害": 13.5 }
+},
+
+// 謬甲
+{
+  id: "整合輕型28_護甲1",
+  name: "整合輕型 護甲 1",
+  set: "整合輕型",
+  part: "護甲",
+  level: 28,
+  stats: { "智識": 30, "意志": 30, "戰技傷害": 8.1 }
+},
+
+// ===== 整合重裝（28） =====
+
+// 配件
+{
+  id: "整合重裝28_配件1",
+  name: "整合重裝 配件 1",
+  set: "整合重裝",
+  part: "配件",
+  level: 28,
+  stats: { "敏捷": 16, "總傷害減免": 7.5 }
+},
+
+{
+  id: "整合重裝28_配件2",
+  name: "整合重裝 配件 2",
+  set: "整合重裝",
+  part: "配件",
+  level: 28,
+  stats: { "力量": 16, "總傷害減免": 7.5 }
+},
+
+// 護手
+{
+  id: "整合重裝28_護手1",
+  name: "整合重裝 護手 1",
+  set: "整合重裝",
+  part: "護手",
+  level: 28,
+  stats: { "力量": 23, "意志": 23, "總傷害減免": 6.3 }
+},
+
+// 護甲
+{
+  id: "整合重裝28_護甲1",
+  name: "整合重裝 護甲 1",
+  set: "整合重裝",
+  part: "護甲",
+  level: 28,
+  stats: { "力量": 30, "敏捷": 30, "總傷害減免": 3.9 }
+},
+
+// ===== 紓難（70） =====
+
+{
+  id: "紓難70_配件1",
+  name: "紓難 配件 1",
+  set: "紓難",
+  part: "配件",
+  level: 70,
+  stats: { "意志": 43, "治療效率": 21.6 }
+},
+
+{
+  id: "紓難70_配件2",
+  name: "紓難 配件 2",
+  set: "紓難",
+  part: "配件",
+  level: 70,
+  stats: { "智識": 43, "終結蓄能": 25.7 }
+},
+
+{
+  id: "紓難70_配件3",
+  name: "紓難 配件 3",
+  set: "紓難",
+  part: "配件",
+  level: 70,
+  stats: { "敏捷": 43, "連攜傷害": 43.2 }
+},
+
+{
+  id: "紓難70_配件4",
+  name: "紓難 配件 4",
+  set: "紓難",
+  part: "配件",
+  level: 70,
+  stats: { "力量": 43, "總傷害減免": 17.8 }
+},
+
+// ===== 礦場γ型（50） =====
+
+// 配件
+{
+  id: "礦場γ50_配件1",
+  name: "礦場γ型 配件 1",
+  set: "礦場γ型",
+  part: "配件",
+  level: 50,
+  stats: { "意志": 31, "治療效率": 15.6 }
+},
+
+{
+  id: "礦場γ50_配件2",
+  name: "礦場γ型 配件 2",
+  set: "礦場γ型",
+  part: "配件",
+  level: 50,
+  stats: { "智識": 31, "終結蓄能": 18.6 }
+},
+
+{
+  id: "礦場γ50_配件3",
+  name: "礦場γ型 配件 3",
+  set: "礦場γ型",
+  part: "配件",
+  level: 50,
+  stats: { "敏捷": 31, "連攜傷害": 31.2 }
+},
+
+{
+  id: "礦場γ50_配件4",
+  name: "礦場γ型 配件 4",
+  set: "礦場γ型",
+  part: "配件",
+  level: 50,
+  stats: { "力量": 31, "總傷害減免": 13.5 }
+},
+
+// 護手
+{
+  id: "礦場γ50_護手1",
+  name: "礦場γ型 護手 1",
+  set: "礦場γ型",
+  part: "護手",
+  level: 50,
+  stats: { "意志": 49, "智識": 32, "終結蓄能": 15.5 }
+},
+
+{
+  id: "礦場γ50_護手2",
+  name: "礦場γ型 護手 2",
+  set: "礦場γ型",
+  part: "護手",
+  level: 50,
+  stats: { "智識": 49, "敏捷": 32, "攻擊力": 13 }
+},
+
+// 護甲
+{
+  id: "礦場γ50_護甲1",
+  name: "礦場γ型 護甲 1",
+  set: "礦場γ型",
+  part: "護甲",
+  level: 50,
+  stats: { "智識": 65, "敏捷": 43, "攻擊力": 7.8 }
+},
+
+{
+  id: "礦場γ50_護甲2",
+  name: "礦場γ型 護甲 2",
+  set: "礦場γ型",
+  part: "護甲",
+  level: 50,
+  stats: { "力量": 65, "意志": 43, "暴擊率": 3.9 }
+},
+
+// ===== 礦場β型（36） =====
+
+// 配件
+{
+  id: "礦場β36_配件1",
+  name: "礦場β型 配件 1",
+  set: "礦場β型",
+  part: "配件",
+  level: 36,
+  stats: { "意志": 22, "生命": 22.8 }
+},
+
+{
+  id: "礦場β36_配件2",
+  name: "礦場β型 配件 2",
+  set: "礦場β型",
+  part: "配件",
+  level: 36,
+  stats: { "智識": 22, "暴擊率": 5.7 }
+},
+
+{
+  id: "礦場β36_配件3",
+  name: "礦場β型 配件 3",
+  set: "礦場β型",
+  part: "配件",
+  level: 36,
+  stats: { "敏捷": 22, "暴擊率": 5.7 }
+},
+
+{
+  id: "礦場β36_配件4",
+  name: "礦場β型 配件 4",
+  set: "礦場β型",
+  part: "配件",
+  level: 36,
+  stats: { "力量": 22, "連攜傷害": 22.8 }
+},
+
+// 護手
+{
+  id: "礦場β36_護手1",
+  name: "礦場β型 護手 1",
+  set: "礦場β型",
+  part: "護手",
+  level: 36,
+  stats: { "智識": 36, "敏捷": 24, "生命": 19 }
+},
+
+{
+  id: "礦場β36_護手2",
+  name: "礦場β型 護手 2",
+  set: "礦場β型",
+  part: "護手",
+  level: 36,
+  stats: { "力量": 36, "智識": 24, "攻擊力": 9.5 }
+},
+
+// ===== 礦場α型（28） =====
+
+// 護手
+{
+  id: "礦場α28_護手1",
+  name: "礦場α型 護手 1",
+  set: "礦場α型",
+  part: "護手",
+  level: 28,
+  stats: { "意志": 28, "智識": 18, "生命": 15 }
+},
+
+{
+  id: "礦場α28_護手2",
+  name: "礦場α型 護手 2",
+  set: "礦場α型",
+  part: "護手",
+  level: 28,
+  stats: { "敏捷": 28, "力量": 18, "生命": 15 }
+},
+
+{
+  id: "礦場α28_護手3",
+  name: "礦場α型 護手 3",
+  set: "礦場α型",
+  part: "護手",
+  level: 28,
+  stats: { "力量": 20, "敏捷": 13, "生命": 11 }
+},
+
+{
+  id: "礦場α28_護手4",
+  name: "礦場α型 護手 4",
+  set: "礦場α型",
+  part: "護手",
+  level: 28,
+  stats: { "智識": 20, "意志": 13, "生命": 11 }
+},
+
+// 護甲
+{
+  id: "礦場α28_護甲1",
+  name: "礦場α型 護甲 1",
+  set: "礦場α型",
+  part: "護甲",
+  level: 28,
+  stats: { "意志": 37, "敏捷": 25, "生命": 9 }
+},
+
+{
+  id: "礦場α28_護甲2",
+  name: "礦場α型 護甲 2",
+  set: "礦場α型",
+  part: "護甲",
+  level: 28,
+  stats: { "敏捷": 37, "智識": 25, "生命": 9 }
+},
+
+{
+  id: "礦場α28_護甲3",
+  name: "礦場α型 護甲 3",
+  set: "礦場α型",
+  part: "護甲",
+  level: 28,
+  stats: { "敏捷": 37, "意志": 25, "攻擊": 11 }
+},
+
+{
+  id: "礦場α28_護甲4",
+  name: "礦場α型 護甲 4",
+  set: "礦場α型",
+  part: "護甲",
+  level: 28,
+  stats: { "力量": 37, "智識": 25, "攻擊": 11 }
+},
+
+{
+  id: "礦場α28_護甲5",
+  name: "礦場α型 護甲 5",
+  set: "礦場α型",
+  part: "護甲",
+  level: 28,
+  stats: { "力量": 27, "敏捷": 18, "生命": 125 }
+},
+
+{
+  id: "礦場α28_護甲6",
+  name: "礦場α型 護甲 6",
+  set: "礦場α型",
+  part: "護甲",
+  level: 28,
+  stats: { "智識": 27, "意志": 18, "生命": 125 }
+},
+
+// 配件
+{
+  id: "礦場α28_配件1",
+  name: "礦場α型 配件 1",
+  set: "礦場α型",
+  part: "配件",
+  level: 28,
+  stats: { "暴擊率": 6.6 }
+},
+
+{
+  id: "礦場α28_配件2",
+  name: "礦場α型 配件 2",
+  set: "礦場α型",
+  part: "配件",
+  level: 28,
+  stats: { "攻擊力": 13.2 }
+},
+
+// ===== 簡易（10） =====
+
+// 護手
+{
+  id: "簡易10_護手1",
+  name: "簡易 護手 1",
+  set: "簡易",
+  part: "護手",
+  level: 10,
+  stats: { "智識": 11, "意志": 7, "生命": 77 }
+},
+
+{
+  id: "簡易10_護手2",
+  name: "簡易 護手 2",
+  set: "簡易",
+  part: "護手",
+  level: 10,
+  stats: { "力量": 11, "敏捷": 7, "生命": 77 }
+},
+
+// 護甲
+{
+  id: "簡易10_護甲1",
+  name: "簡易 護甲 1",
+  set: "簡易",
+  part: "護甲",
+  level: 10,
+  stats: { "智識": 15, "意志": 10, "生命": 46 }
+},
+
+{
+  id: "簡易10_護甲2",
+  name: "簡易 護甲 2",
+  set: "簡易",
+  part: "護甲",
+  level: 10,
+  stats: { "力量": 15, "敏捷": 10, "生命": 46 }
+},
+
+    ];
+
+// ===== 套裝效果 =====
+const setEffects = {
+  "長息": {
+    required: 3,
+    effect: "生命值+1000；裝備者施加增幅/庇護/脆弱/虛弱時，使其他隊友攻擊+16%，持續15秒"
+  },
+
+  "潮湧": {
+    required: 3,
+    effect: "源石技藝+24；裝備者使敵人達3層法術附著並造成法術爆發時，本次傷害+100%；使目標屬性抗性-10，持續10秒"
+  },
+
+  "50應龍": {
+    required: 3,
+    effect: "攻擊力+15%；任一角色施放戰技時，裝備者獲得「應龍之銳」，下次連攜傷害+20%，最多疊加3層"
+  },
+
+  "MI警用": {
+    required: 3,
+    effect: "暴擊率+5%；裝備者每次暴擊時，5秒內攻擊+5%，最多疊加5層；疊滿後額外+5%暴擊率"
+  },
+
+  "動火用": {
+    required: 3,
+    effect: "源石技藝+30；裝備者施加燃燒/腐蝕後，灼燒/自然傷害+60%，持續8秒"
+  },
+
+  "拓荒": {
+    required: 3,
+    effect: "連攜冷卻-15%；裝備者透過技能回技力時，全隊傷害+18%，持續12秒（冷卻30秒）"
+  },
+
+  "脈衝式": {
+    required: 3,
+    effect: "源石技藝+30；裝備者施加導電/凍結後，電磁/寒冷傷害+60%，持續8秒"
+  },
+
+  "碾骨": {
+    required: 3,
+    effect: "攻擊力+15%；裝備者施放連攜技後獲得「碾骨重壓」，下次戰技傷害+30%，最多疊加2層"
+  },
+
+  "輕超域": {
+    required: 3,
+    effect: "攻擊力+8%；裝備者施加破防後，物理傷害+8%，持續15秒，可疊4層；若已有4層破防，物理傷害額外+16%，持續10秒"
+  },
+
+  "生物輔助": {
+    required: 3,
+    effect: "治療效率+20%；裝備者治療我方時，目標10秒內受到傷害+15%；若治療溢出則受到傷害-30%"
+  },
+
+  "點劍": {
+    required: 3,
+    effect: "失衡效率+20%；裝備者造成物理異常時，額外造成一次250%攻擊力物理傷害並附加10點失衡（冷卻15秒）"
+  },
+
+  "天災防護": {
+    required: 3,
+    effect: "終結蓄能+20%；戰鬥開始時獲得+50技力"
+  },
+
+  "阿伯莉遺聲": {
+    required: 3,
+    effect: "技能傷害+24%；裝備者施放戰技/連攜技/終結技後，各自+5%攻擊，持續15秒（三種 buff 獨立存在）"
+  },
+
+  "蝕電防護": {
+    required: 3,
+    effect: "意志+50；裝備者生命低於50%時，造成治療效果+30%"
+  },
+
+  "蝕電絕緣": {
+    required: 3,
+    effect: "智識+50；裝備者生命高於80%時，造成法術傷害+20%"
+  },
+
+  "巡航信使": {
+    required: 3,
+    effect: "敏捷+50；裝備者生命高於80%時，造成物理傷害+20%"
+  },
+
+  "重裝信使": {
+    required: 3,
+    effect: "力量+50；裝備者生命低於50%時，受到傷害+30%"
+  },
+
+  "整合輕型": {
+    required: 3,
+    effect: "生命+500；擊敗敵人後攻擊+20，持續5秒"
+  },
+
+  "整合重裝": {
+    required: 3,
+    effect: "生命+500；擊敗敵人時回復100生命（冷卻5秒）"
+  }
+};
+
+  // === 防禦力規則表 ===
+    const defenseTable = {
+  "配件": {
+    70: 21,
+    50: 15,
+    36: 10,
+    28: 8,
+    20: 6
+  },
+  "護手": {
+    70: 42,
+    50: 30,
+    36: 21,
+    28: 16,
+    20: 12,
+    10: 6
+  },
+  "護甲": {
+    70: 56,
+    50: 40,
+    36: 28,
+    28: 22,
+    20: 16,
+    10: 8
+  }
+};
+
+  // 查防禦力的函式
+function getDefenseValue(item) {
+  const partTable = defenseTable[item.part];
+  if (!partTable) return 0;
+  return partTable[item.level] || 0;
+}
+
+
+    const slots = [
+      { id: "armor", label: "護甲", part: "護甲" },
+      { id: "glove", label: "護手", part: "護手" },
+      { id: "acc1", label: "配件 1", part: "配件" },
+      { id: "acc2", label: "配件 2", part: "配件" }
+    ];
+    
+    let activePart = null; // "護甲" | "護手" | "配件" | null
+    
+    //狀態區
+    const selected = {
+      armor: null,
+      glove: null,
+      acc1: null,
+      acc2: null
+    };
+
+    const mainStats = ["力量", "智識", "敏捷", "意志"];
+    const damageKeywords = ["傷害", "暴擊", "連繫", "普攻", "技能", "電磁", "灼燒"];
+    const defenseKeywords = ["防禦力", "生命", "減免", "失衡"];
+    const percentKeywords = ["率", "傷害", "倍率", "減免", "效率"];
+
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const modalCloseBtn = document.getElementById("modalCloseBtn");
+    const itemListEl = document.getElementById("itemList");
+    const setEffectsEl = document.getElementById("setEffects");
+
+    let currentSlotId = null;
+
+    function openSelector(slotId) {
+      currentSlotId = slotId;
+      const slot = slots.find(s => s.id === slotId);
+      const filtered = items.filter(it => it.part === slot.part);
+      renderItemList(filtered, slot);
+      modalBackdrop.style.display = "flex";
+    }
+
+    function closeSelector() {
+      modalBackdrop.style.display = "none";
+      currentSlotId = null;
+    }
+
+    function renderItemList(list, slot) {
+      itemListEl.innerHTML = "";
+      if (list.length === 0) {
+        const div = document.createElement("div");
+        div.textContent = "沒有可選裝備。";
+        div.style.fontSize = "13px";
+        div.style.color = "#9ca3af";
+        itemListEl.appendChild(div);
+        return;
+      }
+      list.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "item-row";
+        row.onclick = () => {
+          selected[slot.id] = item.id;
+          closeSelector();
+          updateAll();
+        };
+
+        const name = document.createElement("div");
+        name.className = "item-row-name";
+        name.textContent = item.name;
+
+        const set = document.createElement("div");
+        set.className = "item-row-set";
+        set.textContent = item.set || "";
+
+        const part = document.createElement("div");
+        part.className = "item-row-part";
+        part.textContent = item.part;
+
+        const stats = document.createElement("div");
+        stats.className = "item-row-stats";
+        stats.textContent = miniStatsText(item);
+
+        row.appendChild(name);
+        row.appendChild(set);
+        row.appendChild(part);
+        row.appendChild(stats);
+
+        itemListEl.appendChild(row);
+      });
+    }
+
+    function miniStatsText(item) {
+      const entries = Object.entries(item.stats);
+      return entries.map(([k, v]) => `${k}+${v}`).join("，");
+    }
+
+    function formatValue(statName, value) {
+      const v = Number(value);
+      const needsPercent = percentKeywords.some(pk => statName.includes(pk));
+      if (needsPercent) {
+        return (v % 1 === 0 ? v.toFixed(0) : v.toFixed(1)) + "%";
+      }
+      return (v % 1 === 0 ? v.toFixed(0) : v.toFixed(1));
+    }
+
+    function updateSlotsUI() {
+        document.querySelectorAll(".slot").forEach(slotEl => {
+        const slotId = slotEl.getAttribute("data-slot-id");
+
+        const nameEl = slotEl.querySelector(".slot-name");
+        const setEl = slotEl.querySelector(".slot-set");
+        const miniEl = slotEl.querySelector(".slot-mini-stats");
+
+        const selId = selected[slotId];
+
+    // ===== 沒選裝備 =====
+        if (!selId) {
+          if (nameEl) {
+            nameEl.textContent = "未選擇";
+            nameEl.classList.add("slot-empty");
+          }
+          if (setEl) {
+            setEl.textContent = "";
+          }
+          if (miniEl) {
+            miniEl.textContent = "";
+          }
+          return;
+        }
+
+    // ===== 有選裝備 =====
+        const item = items.find(it => it.id === selId);
+
+        if (nameEl) {
+          nameEl.textContent = item ? item.name : "未知裝備";
+          nameEl.classList.remove("slot-empty");
+        }
+
+        if (setEl) {
+          setEl.textContent = item && item.set ? `套裝：${item.set}` : "";
+        }
+
+        if (miniEl) {
+          miniEl.textContent = item ? miniStatsText(item) : "";
+        }
+      });
+    }
+
+
+    function computeTotals() {
+      const totals = {};
+      Object.values(selected).forEach(id => {
+        if (!id) return;
+        const item = items.find(it => it.id === id);
+        if (!item) return;
+
+        // 原本的屬性
+        Object.entries(item.stats).forEach(([k, v]) => {
+          if (!totals[k]) totals[k] = 0;
+          totals[k] += Number(v);
+        });
+
+        // ⬇️ 新增：依部位 + 等級補防禦力
+        const def = getDefenseValue(item);
+        if (def > 0){
+          if (!totals["防禦力"]) totals["防禦力"] = 0;
+          totals["防禦力"] += def;
+        }
+      });
+      return totals;
+    }
+
+    function categorizeStats(totals) {
+      const main = {};
+      const dmg = {};
+      const def = {};
+      const special = {};
+
+      Object.entries(totals).forEach(([name, value]) => {
+        if (mainStats.includes(name)) {
+          main[name] = value;
+        } else if (damageKeywords.some(kw => name.includes(kw))) {
+          dmg[name] = value;
+        } else if (defenseKeywords.some(kw => name.includes(kw))) {
+          def[name] = value;
+        } else {
+          special[name] = value;
+        }
+      });
+
+      return { main, dmg, def, special };
+    }
+
+function formatValue(name, value) {
+  const percentStats = [
+    "戰技傷害", "普攻傷害", "技能傷害", "連攜傷害", "終結傷害",
+    "終結蓄能", "暴擊率", "副能力", "主能力",
+    "物理傷害", "法術傷害","攻擊力",
+    "寒冷/電磁傷害", "灼熱/自然傷害",
+    "總傷害減免", "失衡目標傷害"
+  ];
+
+  if (percentStats.includes(name)) {
+    return value + "%";
+  }
+  return value;
+}
+
+function selectEquip(item) {
+  // 1️⃣ 根據部位放入對應的 slot
+  if (item.part === "護甲") {
+    selected.armor = item.id;
+  } else if (item.part === "護手") {
+    selected.gloves = item.id;
+  } else if (item.part === "配件") {
+    // 簡單策略：先放 acc1，再 acc2
+    if (!selected.acc1) {
+      selected.acc1 = item.id;
+    } else {
+      selected.acc2 = item.id;
+    }
+  }
+
+  // 2️⃣ 清空目前選擇部位 → 紅色區域回 idle
+  activePart = null;
+
+  // 3️⃣ 更新整體畫面
+  updateAll();
+  renderEquipSelector();
+}
+
+
+function renderEquipSelector() {
+  const el = document.getElementById("equip-selector");
+  el.innerHTML = "";
+
+  // 如果還沒選部位 → 顯示提示
+  if (!activePart) {
+    el.innerHTML = `<div class="selector-placeholder">請選擇裝備</div>`;
+    return;
+  }
+
+  // 篩選該部位的裝備
+  const list = items.filter(it => it.part === activePart);
+
+  // 如果該部位沒有裝備
+  if (list.length === 0) {
+    el.innerHTML = `<div class="selector-placeholder">此部位沒有可用裝備</div>`;
+    return;
+  }
+
+  const container = document.createElement("div");
+  container.className = "item-list";
+
+  list.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "item-row";
+
+    row.innerHTML = `
+      <div class="item-row-name">${item.name}</div>
+      <div class="item-row-set">${item.set || "-"}</div>
+      <div class="item-row-part">${item.level} 等</div>
+      <div class="item-row-stats">${miniStatsText(item)}</div>
+    `;
+
+    // ⭐ 新增：點擊紅色裝備 → 裝上
+    row.addEventListener("click", () => {
+      console.log("CLICK ITEM:", item.name);
+      selectEquip(item);
+    });
+
+    container.appendChild(row);
+  });
+
+  el.appendChild(container);
+}
+
+
+// 裝備屬性顯示順序
+    function renderStatsSection(el, statsObj, emptyText) {
+      el.innerHTML = "";
+      const entries = Object.entries(statsObj);
+      if (entries.length === 0) {
+        const line = document.createElement("div");
+        line.className = "stat-line";
+        const name = document.createElement("span");
+        name.className = "stat-name";
+        name.textContent = emptyText;
+        line.appendChild(name);
+        el.appendChild(line);
+        return;
+      }
+      const statPriority = ["防禦力"];
+
+      // 更改防禦力永遠第一個顯示
+      entries.sort((a, b) => {
+        const ai = statPriority.indexOf(a[0]);
+        const bi = statPriority.indexOf(b[0]);
+        if (ai !== -1 || bi !== -1) {
+          return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+        }
+      return a[0].localeCompare(b[0], "zh-Hant");
+      });
+
+      entries.forEach(([name, value]) => {
+        const line = document.createElement("div");
+        line.className = "stat-line";
+        const nameEl = document.createElement("span");
+        nameEl.className = "stat-name";
+        nameEl.textContent = name;
+        const valEl = document.createElement("span");
+        valEl.className = "stat-value";
+        valEl.textContent = "+" + formatValue(name, value);
+        line.appendChild(nameEl);
+        line.appendChild(valEl);
+        el.appendChild(line);
+      });
+    }
+
+    function computeSetCounts() {
+      const counts = {};
+      Object.values(selected).forEach(id => {
+        if (!id) return;
+        const item = items.find(it => it.id === id);
+        if (!item || !item.set) return;
+        counts[item.set] = (counts[item.set] || 0) + 1;
+      });
+      return counts;
+    }
+
+    function renderSetEffects() {
+  const setEffectsEl = document.getElementById("set-effects");
+  if (!setEffectsEl) return;   // ⭐ 關鍵防護，避免 UI 尚未完成就炸
+
+  setEffectsEl.innerHTML = "";
+
+  const counts = computeSetCounts();
+  const active = [];
+
+  Object.entries(setEffects).forEach(([setName, info]) => {
+    const count = counts[setName] || 0;
+    if (count >= info.required) {
+      active.push({ setName, count, info });
+    }
+  });
+
+  if (active.length === 0) {
+    const div = document.createElement("div");
+    div.className = "no-set";
+    div.textContent = "尚未觸發任何套裝效果。";
+    setEffectsEl.appendChild(div);
+    return;
+  }
+
+  active.forEach(s => {
+    const card = document.createElement("div");
+    card.className = "set-card";
+
+    const header = document.createElement("div");
+    header.className = "set-card-header";
+
+    const nameEl = document.createElement("div");
+    nameEl.className = "set-card-name";
+    nameEl.textContent = s.setName;
+
+    const countEl = document.createElement("div");
+    countEl.className = "set-card-count";
+    countEl.textContent = `${s.count} 件 / 需求 ${s.info.required} 件`;
+
+    header.appendChild(nameEl);
+    header.appendChild(countEl);
+
+    const textEl = document.createElement("div");
+    textEl.className = "set-card-text";
+    textEl.textContent = s.info.effect;
+
+    card.appendChild(header);
+    card.appendChild(textEl);
+
+    setEffectsEl.appendChild(card);
+  });
+}
+
+
+    function updateAll() {
+      updateSlotsUI();
+      const totals = computeTotals();
+      const { main, dmg, def, special } = categorizeStats(totals);
+      renderStatsSection(document.getElementById("stats-main"), main, Object.values(selected).some(v => v) ? "目前沒有主要屬性加成" : "尚未選擇裝備");
+      renderStatsSection(document.getElementById("stats-damage"), dmg, "目前沒有傷害相關加成。");
+      renderStatsSection(document.getElementById("stats-defense"), def, "目前沒有防禦 / 生存加成。");
+      renderStatsSection(document.getElementById("stats-special"), special, "目前沒有特殊加成。");
+      renderSetEffects();
+    }
+
+    // 綁定事件
+    //document.querySelectorAll(".slot").forEach(slotEl => {
+    //  const id = slotEl.getAttribute("data-slot-id");
+    //  slotEl.addEventListener("click", () => openSelector(id));
+    //});
+    document.querySelectorAll(".slot").forEach(slotEl => {
+      slotEl.addEventListener("click", () => {
+        activePart = slotEl.dataset.part; // 護甲 / 護手 / 配件
+        console.log("activePart =", activePart);
+        renderEquipSelector();
+      });
+    });
+
+    modalCloseBtn.addEventListener("click", closeSelector);
+    modalBackdrop.addEventListener("click", (e) => {
+      if (e.target === modalBackdrop) {
+        closeSelector();
+      }
+    });
+
+    updateAll();
+  </script>
+</body>
+</html>
