@@ -1,0 +1,9 @@
+reminder-pwa/
+  server/
+    package.json
+    index.js
+  web/
+    index.html
+    app.js
+    sw.js
+    manifest.json
